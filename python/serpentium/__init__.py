@@ -37,10 +37,12 @@ __all__ = [
     "uninstall",
 ]
 
-try:  # populated by the build backend; fall back for source checkouts
-    from ._version import __version__  # ty: ignore[unresolved-import]
-except ImportError:  # pragma: no cover
-    __version__ = "0.0.1"
+try:  # the single source of truth is the version in pyproject.toml
+    from importlib.metadata import version as _version
+
+    __version__ = _version("serpentium")
+except Exception:  # pragma: no cover - source tree without an installed dist
+    __version__ = "0.0.0+unknown"
 
 
 def _apply_floatium():

@@ -30,8 +30,7 @@ the pure-Python ones.
 
 ## Testing against CPython's own suite
 
-The load-bearing question for any stdlib monkeypatch is whether the standard
-library's *own* tests still pass under it. `tools/cpython_suite.py` runs CPython's
+`tools/cpython_suite.py` runs CPython's
 `test` package with serpentium active in every regrtest worker — it injects a
 backend-aware `usercustomize` on `PYTHONPATH`, so single-process and `-j` parallel
 runs both work:
@@ -68,32 +67,6 @@ pure-Python ones still load), and `randium.Random()` raises rather than silently
 a slow path. `src/html_entities.rs` is generated — after a CPython entity-table change,
 regenerate it with `python tools/generate_html_entities.py`.
 
-## Layout
-
-```
-serpentium/
-├── Cargo.toml                       # Rust crate -> serpentium._native extension module
-├── pyproject.toml                   # maturin backend; deps: floatium, copium
-├── serpentium-autopatch.pth         # startup hook (shipped to site-packages root)
-├── src/
-│   ├── lib.rs                       # #[pymodule] _native glue (mod randium; mod html)
-│   ├── randium.rs                   # MT19937 + bounded ints + shuffle (randium)
-│   ├── html.rs                      # html.escape/unescape + vectorcall patching (htmlium)
-│   └── html_entities.rs             # generated named/numeric reference tables
-├── python/serpentium/
-│   ├── __init__.py                  # install()/uninstall()/status() for all elements
-│   ├── _native.pyi                  # type stubs for the compiled module
-│   ├── _autopatch.py                # startup autopatch decision + entry point
-│   ├── __main__.py                  # `python -m serpentium {status,enable,disable}`
-│   ├── randium/__init__.py          # Random class + in-place install()/uninstall()
-│   ├── datetimium/__init__.py       # fast strptime + install()/uninstall()
-│   └── htmlium/__init__.py          # html.escape/unescape + in-place install()/uninstall()
-├── tests/                           # parity, fuzz, autopatch, CPython-suite guard
-├── tools/
-│   ├── cpython_suite.py             # run CPython's stdlib tests under serpentium
-│   └── generate_html_entities.py    # regenerate src/html_entities.rs from html.entities
-└── benchmarks/bench_randium.py
-```
 
 ## The accelerators
 

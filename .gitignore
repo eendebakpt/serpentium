@@ -12,4 +12,3 @@ __pycache__/
 build/
 dist/
 .venv/
-python/serpentium/_version.py
