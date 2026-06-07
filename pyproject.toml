@@ -1,0 +1,93 @@
+[build-system]
+requires = ["maturin>=1.7,<2"]
+build-backend = "maturin"
+
+[project]
+name = "serpentium"
+version = "0.0.1"
+description = "Drop-in performance accelerators for CPython, bundled. floatium + copium + randium."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT OR Apache-2.0" }
+authors = [{ name = "Pieter Eendebak", email = "pieter.eendebak@gmail.com" }]
+keywords = ["performance", "drop-in", "random", "deepcopy", "float", "rust"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Programming Language :: Rust",
+    "Topic :: Software Development :: Libraries",
+]
+
+# The bundled accelerators. These are real, separately-maintained drop-in
+# replacements; serpentium just wires them together behind one install() call.
+#   - floatium : fast float <-> string conversion   (eendebakpt)
+#   - copium   : fast copy.deepcopy                  (Bobronium)
+# randium ships *inside* serpentium as a compiled Rust extension module.
+dependencies = [
+    "floatium",
+    "copium",
+]
+
+[project.optional-dependencies]
+test = ["pytest>=8"]
+bench = ["pytest>=8"]
+dev = ["pytest>=8", "ruff>=0.5", "maturin>=1.7,<2"]
+
+[project.urls]
+Homepage = "https://github.com/eendebakpt/serpentium"
+Issues = "https://github.com/eendebakpt/serpentium/issues"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W", "UP", "B", "SIM", "RUF"]
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = ["tests"]
+addopts = "-ra"
+filterwarnings = [
+    "error",
+    # randium/datetimium parity tests legitimately exercise year-less strptime,
+    # which CPython 3.14 deprecates; that warning is expected, not a failure.
+    "ignore:Parsing dates involving a day of month without a year:DeprecationWarning",
+]
+
+[tool.maturin]
+# Mixed Python/Rust layout: pure-Python sources live under python/, and the
+# single compiled crate is dropped in as serpentium._native (shared by the randium
+# and htmlium subpackages, which import their pieces from it).
+python-source = "python"
+module-name = "serpentium._native"
+features = ["pyo3/extension-module"]
+# Ship the startup hook so installing serpentium auto-enables the accelerators.
+# The .pth must land at the site-packages root, so it lives at the project root
+# and is included into the wheel explicitly.
+include = ["serpentium-autopatch.pth"]
+
+[tool.ty.environment]
+# The importable package lives under python/ (mixed maturin layout).
+root = ["./python"]
+python-version = "3.11"
+
+[tool.cibuildwheel]
+# Version-specific wheels (not abi3): one per supported CPython.
+build = "cp311-* cp312-* cp313-* cp314-*"
+skip = "*_i686 *-win32 *-musllinux_*"
+build-frontend = "build"
+# Smoke-test the compiled backend in each wheel. Scoped to the native-only parity
+# tests so it doesn't depend on the floatium/copium deps having wheels everywhere.
+test-requires = "pytest"
+test-command = "pytest {project}/tests/test_htmlium_parity.py {project}/tests/test_randium_parity.py -q"
+# Keep the test interpreter clean; the autopatch .pth would otherwise self-install.
+environment = { SERPENTIUM_AUTOPATCH = "0" }
+
+[tool.cibuildwheel.linux]
+# manylinux images have no Rust; install it and put cargo on PATH.
+before-all = "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y"
+environment = { SERPENTIUM_AUTOPATCH = "0", PATH = "$HOME/.cargo/bin:$PATH" }

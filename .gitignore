@@ -1,0 +1,15 @@
+# Rust
+/target
+Cargo.lock
+
+# Python
+__pycache__/
+*.py[cod]
+*.so
+*.pyd
+.pytest_cache/
+*.egg-info/
+build/
+dist/
+.venv/
+python/serpentium/_version.py
