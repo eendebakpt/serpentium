@@ -9,6 +9,7 @@
 //!     vectorcall patching (see `html.rs`); its entity tables are generated into
 //!     `html_entities.rs` by `tools/generate_html_entities.py`.
 
+use pyo3::ffi;
 use pyo3::prelude::*;
 
 mod html;
@@ -16,6 +17,23 @@ mod html_entities;
 mod randium;
 
 use randium::RandiumState;
+
+/// Set a Python function object's vectorcall slot in place.
+///
+/// Writes the struct fields directly instead of calling `PyFunction_SetVectorcall`,
+/// avoiding a dependency on that symbol (and the Windows link/abi quirks around it).
+/// Zeroing `func_version` invalidates the interpreter's per-function specialization,
+/// exactly as CPython's own setter does.
+///
+/// Safety: `func` must be a live `PyFunctionObject`; caller holds the GIL.
+pub(crate) unsafe fn set_function_vectorcall(
+    func: *mut ffi::PyObject,
+    vectorcall: Option<ffi::vectorcallfunc>,
+) {
+    let f = func as *mut ffi::PyFunctionObject;
+    (*f).func_version = 0;
+    (*f).vectorcall = vectorcall;
+}
 
 #[pymodule]
 fn _native(m: &Bound<'_, PyModule>) -> PyResult<()> {

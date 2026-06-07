@@ -282,11 +282,7 @@ fn unescape<'py>(s: &Bound<'py, PyString>) -> PyResult<Bound<'py, PyString>> {
 // drop-in is total: weird inputs get the stdlib's exact result and error messages.
 // ---------------------------------------------------------------------------
 
-extern "C" {
-    // Public since CPython 3.12 (cpython/funcobject.h); resets func_version and sets
-    // the slot. Not exposed by pyo3-ffi, so we declare it; resolved against libpython.
-    fn PyFunction_SetVectorcall(func: *mut ffi::PyObject, vectorcall: ffi::vectorcallfunc);
-}
+use crate::set_function_vectorcall;
 
 static SAVED_ESCAPE: AtomicUsize = AtomicUsize::new(0);
 static SAVED_UNESCAPE: AtomicUsize = AtomicUsize::new(0);
@@ -389,8 +385,8 @@ fn install(escape_fn: &Bound<'_, PyAny>, unescape_fn: &Bound<'_, PyAny>) -> bool
         };
         SAVED_ESCAPE.store(orig_e as usize, Ordering::Relaxed);
         SAVED_UNESCAPE.store(orig_u as usize, Ordering::Relaxed);
-        PyFunction_SetVectorcall(e, escape_vectorcall);
-        PyFunction_SetVectorcall(u, unescape_vectorcall);
+        set_function_vectorcall(e, Some(escape_vectorcall));
+        set_function_vectorcall(u, Some(unescape_vectorcall));
     }
     true
 }
@@ -402,10 +398,10 @@ fn uninstall(escape_fn: &Bound<'_, PyAny>, unescape_fn: &Bound<'_, PyAny>) {
         let se = SAVED_ESCAPE.load(Ordering::Relaxed);
         let su = SAVED_UNESCAPE.load(Ordering::Relaxed);
         if se != 0 {
-            PyFunction_SetVectorcall(escape_fn.as_ptr(), std::mem::transmute(se));
+            set_function_vectorcall(escape_fn.as_ptr(), Some(std::mem::transmute(se)));
         }
         if su != 0 {
-            PyFunction_SetVectorcall(unescape_fn.as_ptr(), std::mem::transmute(su));
+            set_function_vectorcall(unescape_fn.as_ptr(), Some(std::mem::transmute(su)));
         }
     }
 }

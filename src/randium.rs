@@ -333,9 +333,6 @@ impl RandiumState {
 // back what this saves).
 // ---------------------------------------------------------------------------
 
-extern "C" {
-    fn PyFunction_SetVectorcall(func: *mut ffi::PyObject, vectorcall: ffi::vectorcallfunc);
-}
 
 // The singleton's RandiumState: `OBJ` keeps it alive (incref'd while installed); `DATA`
 // is a pointer to its inner Rust value, resolved once at install. Both are null when
@@ -387,7 +384,7 @@ pub fn install_fast_random(func: &Bound<'_, PyAny>, rs: &Bound<'_, RandiumState>
         }
         SINGLETON_DATA.store(data, Ordering::Relaxed);
         SAVED_VC.store(orig as usize, Ordering::Relaxed);
-        PyFunction_SetVectorcall(f, fast_random_vectorcall);
+        crate::set_function_vectorcall(f, Some(fast_random_vectorcall));
     }
     true
 }

@@ -7,14 +7,12 @@ name = "serpentium"
 version = "0.0.1"
 description = "Drop-in performance accelerators for CPython, bundled. floatium + copium + randium."
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.13"
 license = { text = "MIT OR Apache-2.0" }
 authors = [{ name = "Pieter Eendebak", email = "pieter.eendebak@gmail.com" }]
 keywords = ["performance", "drop-in", "random", "deepcopy", "float", "rust"]
 classifiers = [
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
     "Programming Language :: Rust",
@@ -42,7 +40,7 @@ Issues = "https://github.com/eendebakpt/serpentium/issues"
 
 [tool.ruff]
 line-length = 100
-target-version = "py311"
+target-version = "py313"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "W", "UP", "B", "SIM", "RUF"]
@@ -73,11 +71,11 @@ include = ["serpentium-autopatch.pth"]
 [tool.ty.environment]
 # The importable package lives under python/ (mixed maturin layout).
 root = ["./python"]
-python-version = "3.11"
+python-version = "3.13"
 
 [tool.cibuildwheel]
 # Version-specific wheels (not abi3): one per supported CPython.
-build = "cp311-* cp312-* cp313-* cp314-*"
+build = "cp313-* cp314-*"
 skip = "*_i686 *-win32 *-musllinux_*"
 build-frontend = "build"
 # Smoke-test the compiled backend in each wheel. Scoped to the native-only parity
