@@ -1,5 +1,7 @@
 # serpentium
 
+[![PyPI](https://img.shields.io/pypi/v/serpentium)](https://pypi.org/project/serpentium/)
+
 **Drop-in performance accelerators for CPython, bundled.**
 
 `pip install serpentium` and several hot paths in the standard library transparently start running on faster native code — no code changes, and no `import` required: serpentium auto-enables at interpreter startup.
