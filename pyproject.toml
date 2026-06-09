@@ -4,7 +4,7 @@ build-backend = "maturin"
 
 [project]
 name = "serpentium"
-version = "0.0.2"
+version = "0.0.3"
 description = "Drop-in performance accelerators for CPython, bundled. floatium + copium + randium."
 readme = "README.md"
 requires-python = ">=3.13"
@@ -89,3 +89,8 @@ environment = { SERPENTIUM_AUTOPATCH = "0" }
 # manylinux images have no Rust; install it and put cargo on PATH.
 before-all = "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y"
 environment = { SERPENTIUM_AUTOPATCH = "0", PATH = "$HOME/.cargo/bin:$PATH" }
+
+[tool.cibuildwheel.macos]
+# Build both ARM and Intel wheels from the macos-14 (ARM) runner via cross-compilation.
+archs = "arm64 x86_64"
+before-all = "rustup target add x86_64-apple-darwin"
