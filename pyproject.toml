@@ -64,9 +64,9 @@ python-source = "python"
 module-name = "serpentium._native"
 features = ["pyo3/extension-module"]
 # Ship the startup hook so installing serpentium auto-enables the accelerators.
-# The .pth must land at the site-packages root, so it lives at the project root
-# and is included into the wheel explicitly.
-include = ["serpentium-autopatch.pth"]
+# The .pth must land at the site-packages root; the data/purelib/ mechanism
+# ensures it is installed for both wheel installs and `maturin develop`.
+data = "data"
 
 [tool.ty.environment]
 # The importable package lives under python/ (mixed maturin layout).
