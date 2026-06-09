@@ -4,7 +4,7 @@ build-backend = "maturin"
 
 [project]
 name = "serpentium"
-version = "0.0.3"
+version = "0.0.4"
 description = "Drop-in performance accelerators for CPython, bundled. floatium + copium + randium."
 readme = "README.md"
 requires-python = ">=3.13"

@@ -1,6 +1,6 @@
 [package]
 name = "serpentium-native"
-version = "0.0.3"
+version = "0.0.4"
 edition = "2021"
 description = "Rust backends for serpentium: the randium random core and the htmlium html.escape/unescape accelerator"
 license = "MIT OR Apache-2.0"
