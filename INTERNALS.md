@@ -58,7 +58,8 @@ maturin develop --release       # builds serpentium._native and installs editabl
 pytest                          # parity vs. stdlib + meta-package tests
 python tools/cpython_suite.py            # run CPython's own tests under serpentium
 python tools/generate_html_entities.py --check   # verify the html tables are current
-python benchmarks/bench_randium.py
+python benchmarks/bench.py stdlib -o a.json       # benchmark vs stdlib (pyperf)
+python benchmarks/bench.py serpentium -o b.json && python -m pyperf compare_to a.json b.json --table
 ```
 
 If the Rust extension is not built, `serpentium.randium.HAVE_RUST_BACKEND` and

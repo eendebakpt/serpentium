@@ -36,23 +36,31 @@ are separately-maintained packages pulled in as dependencies.
 
 ## Benchmarks
 
-CPython 3.14, release build. serpentium wins where a whole Python loop moves to
-native code (shuffle, deepcopy, entity decoding); per-call primitives merely *tie*
-CPython's hand-tuned C (the honest story — see [INTERNALS.md](INTERNALS.md)).
+CPython 3.14. Measured with [`benchmarks/bench.py`](benchmarks/bench.py) (pyperf,
+mean ± std dev); reproduce with `python benchmarks/bench.py stdlib -o a.json &&
+python benchmarks/bench.py serpentium -o b.json && python -m pyperf compare_to a.json
+b.json --table`. Absolute times and the marginal ratios depend on your CPU and CPython
+build, so re-run it rather than trusting these exact figures.
+
+serpentium wins where a whole Python loop moves to native code (shuffle, deepcopy,
+entity decoding); per-call primitives merely *tie* CPython's hand-tuned C (the honest
+story — see [INTERNALS.md](INTERNALS.md)).
 
 | Operation | stdlib | serpentium | speedup |
 |---|--:|--:|--:|
-| `random.shuffle(list[1000])` | 158 µs | 19 µs | **8.3×** |
-| `copy.deepcopy` (pyperformance `bm_deepcopy`) | 7.8 µs | 1.3 µs | **6.0×** |
-| `html.unescape` (text with entities) | 4.3 µs | 0.95 µs | **4.5×** |
-| `html.escape` (clean paragraph) | 208 ns | 62 ns | **3.3×** |
-| `datetime.strptime("%Y-%m-%d")` | 3.77 µs | 1.54 µs | **2.4×** |
-| `f"{x:.3f}"` (float formatting) | 348 ns | 160 ns | **2.2×** |
-| `datetime.strptime("%Y-%m-%d %H:%M:%S")` | 4.67 µs | 2.75 µs | **1.7×** |
-| `random.sample(10k, 100)` | 20.7 µs | 17.5 µs | 1.2× |
-| `random.randint(1, 6)` | 157 ns | 150 ns | 1.05× |
-| `random.random()` | 54 ns | 51 ns | 1.04× |
-| `html.unescape` (no entities) | 42 ns | 42 ns | 1.0× |
+| `random.shuffle(list[1000])` | 157.8 ± 0.5 µs | 19.29 ± 0.04 µs | **8.2×** |
+| `copy.deepcopy` (pyperformance `bm_deepcopy`) | 8.46 ± 0.07 µs | 1.33 ± 0.01 µs | **6.4×** |
+| `html.unescape` (text with entities) | 4.49 ± 0.08 µs | 0.918 ± 0.003 µs | **4.9×** |
+| `html.escape` (clean paragraph) | 206 ± 5 ns | 53.2 ± 0.4 ns | **3.9×** |
+| `f"{x:.3f}"` (float formatting) | 334 ± 4 ns | 141 ± 1 ns | **2.4×** |
+| `datetime.strptime("%Y-%m-%d")` | 3.65 ± 0.04 µs | 1.80 ± 0.03 µs | **2.0×** |
+| `datetime.strptime("%Y-%m-%d %H:%M:%S")` | 4.57 ± 0.04 µs | 3.01 ± 0.02 µs | **1.5×** |
+| `random.sample(10k, 100)` | 20.8 ± 0.1 µs | 18.1 ± 0.4 µs | 1.15× |
+| `random.random()` | 41.5 ± 0.2 ns | 38.4 ± 0.2 ns | 1.08× |
+| `random.randint(1, 6)` | 144 ± 1 ns | 140 ± 1 ns | 1.03× |
+| `html.unescape` (no entities) | 33.6 ± 0.1 ns | 32.3 ± 0.3 ns | 1.04× |
+
+Geometric mean: **2.3× faster** (std dev ≤ ~2% relative on every row).
 
 ## Control
 

@@ -31,8 +31,8 @@ dependencies = [
 
 [project.optional-dependencies]
 test = ["pytest>=8"]
-bench = ["pytest>=8"]
-dev = ["pytest>=8", "ruff>=0.5", "maturin>=1.7,<2"]
+bench = ["pyperf>=2.6"]
+dev = ["pytest>=8", "ruff>=0.5", "maturin>=1.7,<2", "pyperf>=2.6"]
 
 [project.urls]
 Homepage = "https://github.com/eendebakpt/serpentium"
