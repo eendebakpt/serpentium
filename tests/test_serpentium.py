@@ -42,6 +42,28 @@ def test_install_patches_random_module():
     assert random.Random._randbelow_with_getrandbits is original_randbelow
 
 
+def test_copium_patch_enable_after_serpentium_install():
+    """Regression: copium.patch.enable() must not raise after serpentium.install().
+
+    serpentium used to do a raw ``copy.deepcopy = copium.deepcopy`` swap, bypassing
+    copium's own state tracking.  A subsequent ``copium.patch.enable()`` then raised
+    ``TypeError: copy.deepcopy is not a Python function`` because copium saw its own
+    built-in already in place via an untracked path.
+    """
+    copium = pytest.importorskip("copium")
+    patch = getattr(copium, "patch", None)
+    if patch is None or not callable(getattr(patch, "enable", None)):
+        pytest.skip("copium.patch.enable not available in this copium version")
+
+    serpentium.install(floatium=False, randium=False, datetimium=False, htmlium=False)
+    try:
+        # Must not raise TypeError.
+        copium.patch.enable()
+        assert copium.patch.enabled()
+    finally:
+        serpentium.uninstall()
+
+
 @pytest.mark.skipif(not randium.HAVE_RUST_BACKEND, reason="randium Rust backend not compiled")
 def test_uninstall_is_idempotent():
     serpentium.uninstall()  # should be a no-op when nothing is installed

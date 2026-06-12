@@ -79,6 +79,15 @@ def _apply_copium():
         import copium  # ty: ignore[unresolved-import]
     except ImportError:
         return False, "not installed"
+    # copium exposes a submodule ``copium.patch`` with ``enable``/``disable``;
+    # check that before the top-level name loop so we never do a raw
+    # ``copy.deepcopy`` swap that bypasses copium's own state tracking.
+    _patch_ns = getattr(copium, "patch", None)
+    if _patch_ns is not None:
+        _enable_fn = getattr(_patch_ns, "enable", None)
+        if callable(_enable_fn):
+            _enable_fn()
+            return True, "copium.patch.enable()"
     for hook in ("install", "patch", "enable"):
         fn = getattr(copium, hook, None)
         if callable(fn):
@@ -104,6 +113,12 @@ def _remove_copium():
         import copium  # ty: ignore[unresolved-import]
     except ImportError:
         return
+    _patch_ns = getattr(copium, "patch", None)
+    if _patch_ns is not None:
+        _disable_fn = getattr(_patch_ns, "disable", None)
+        if callable(_disable_fn):
+            _disable_fn()
+            return
     for hook in ("uninstall", "unpatch", "disable"):
         fn = getattr(copium, hook, None)
         if callable(fn):
